@@ -2,12 +2,12 @@ pipeline {
     agent any
 
     environment {
-        APP_DIR = "/opt/flask-app"            // Replace if your actual app path differs
-        SSH_CREDS = "374d2c80-d7f4-454f-9c70-1f0bf9681dc6"            // Jenkins SSH credential ID
-        CONTAINER_IP = "192.168.73.50"        // Flask app container IP
+        APP_DIR = "/opt/flask-app"                      // Actual Flask app directory inside the container
+        SSH_CREDS = "374d2c80-d7f4-454f-9c70-1f0bf9681dc6" // Jenkins SSH Credential ID (UUID)
+        CONTAINER_IP = "192.168.73.50"                  // Flask container IP
     }
 
-tages {
+    stages {
         stage('Checkout') {
             steps {
                 git branch: 'main', url: 'https://github.com/chanduo5/flask-app.git'
@@ -50,6 +50,8 @@ tages {
                     def response = sh(script: "curl -s -o /dev/null -w '%{http_code}' http://${CONTAINER_IP}", returnStdout: true).trim()
                     if (response != '200') {
                         error "App not healthy! Got HTTP $response"
+                    } else {
+                        echo "✅ App is healthy and returned HTTP $response"
                     }
                 }
             }
