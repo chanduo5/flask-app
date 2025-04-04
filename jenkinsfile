@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        APP_DIR = "/opt/flask_app"            // Replace if your actual app path differs
+        APP_DIR = "/opt/flask-app"            // Replace if your actual app path differs
         SSH_CREDS = "374d2c80-d7f4-454f-9c70-1f0bf9681dc6"            // Jenkins SSH credential ID
         CONTAINER_IP = "192.168.73.50"        // Flask app container IP
     }
