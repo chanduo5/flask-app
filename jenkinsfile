@@ -7,16 +7,24 @@ pipeline {
         CONTAINER_IP = "192.168.73.50"        // Flask app container IP
     }
 
-    stages {
-        stage('Clone Repository') {
+tages {
+        stage('Checkout') {
             steps {
-                git branch: 'main', url:'https://github.com/chanduo5/flask-app.git'
+                git branch: 'main', url: 'https://github.com/chanduo5/flask-app.git'
+            }
+        }
+
+        stage('Check Python & Pip') {
+            steps {
+                sh 'which python3'
+                sh 'python3 --version'
+                sh 'python3 -m pip --version'
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                sh 'pip install -r requirements.txt'
+                sh 'python3 -m pip install -r requirements.txt'
             }
         }
 
@@ -24,13 +32,13 @@ pipeline {
             steps {
                 sshagent(credentials: [SSH_CREDS]) {
                     sh """
-                        ssh root@${CONTAINER_IP} '
-                        cd ${APP_DIR}
-                        git pull origin main
-                        pip install -r requirements.txt
-                        systemctl restart flask_app
-                        systemctl restart nginx
-                        '
+                    ssh root@${CONTAINER_IP} '
+                    cd ${APP_DIR}
+                    git pull origin main
+                    python3 -m pip install -r requirements.txt
+                    systemctl restart flask-app
+                    systemctl restart nginx
+                    '
                     """
                 }
             }
@@ -41,7 +49,7 @@ pipeline {
                 script {
                     def response = sh(script: "curl -s -o /dev/null -w '%{http_code}' http://${CONTAINER_IP}", returnStdout: true).trim()
                     if (response != '200') {
-                        error "Application is not responding with status 200!"
+                        error "App not healthy! Got HTTP $response"
                     }
                 }
             }
