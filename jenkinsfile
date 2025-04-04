@@ -1,0 +1,50 @@
+pipeline {
+    agent any
+
+    environment {
+        APP_DIR = "/opt/flask_app"            // Replace if your actual app path differs
+        SSH_CREDS = "374d2c80-d7f4-454f-9c70-1f0bf9681dc6"            // Jenkins SSH credential ID
+        CONTAINER_IP = "192.168.73.50"        // Flask app container IP
+    }
+
+    stages {
+        stage('Clone Repository') {
+            steps {
+                git branch: 'main', url: 'https://github.com/chanduo5/flask-app.git'
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                sh 'pip install -r requirements.txt'
+            }
+        }
+
+        stage('Deploy to Container') {
+            steps {
+                sshagent(credentials: [SSH_CREDS]) {
+                    sh """
+                        ssh root@${CONTAINER_IP} '
+                        cd ${APP_DIR}
+                        git pull origin main
+                        pip install -r requirements.txt
+                        systemctl restart flask_app
+                        systemctl restart nginx
+                        '
+                    """
+                }
+            }
+        }
+
+        stage('Health Check') {
+            steps {
+                script {
+                    def response = sh(script: "curl -s -o /dev/null -w '%{http_code}' http://${CONTAINER_IP}", returnStdout: true).trim()
+                    if (response != '200') {
+                        error "Application is not responding with status 200!"
+                    }
+                }
+            }
+        }
+    }
+}
