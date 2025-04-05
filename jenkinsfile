@@ -2,9 +2,9 @@ pipeline {
     agent any
 
     environment {
-        APP_DIR = "/opt/flask-app"                      // Actual Flask app directory inside the container
-        SSH_CREDS = "374d2c80-d7f4-454f-9c70-1f0bf9681dc6" // Jenkins SSH Credential ID (UUID)
-        CONTAINER_IP = "192.168.73.50"                  // Flask container IP
+        APP_DIR = "/opt/flask-app"
+        SSH_CREDS = "374d2c80-d7f4-454f-9c70-1f0bf9681dc6"
+        CONTAINER_IP = "192.168.73.50"
     }
 
     stages {
@@ -30,45 +30,13 @@ pipeline {
                 pip install --upgrade pip
                 pip install -r requirements.txt
                 '''
-           }
-         }
-
-
-        stage('Deploy to Container') {
-            steps {
-                sshagent(credentials: [SSH_CREDS]) {
-                    sh """
-                    ssh root@${CONTAINER_IP} '
-                    cd ${APP_DIR}
-                    git pull origin main
-                    python3 -m pip install -r requirements.txt
-                    systemctl restart flask-app
-                    systemctl restart nginx
-                    '
-                    """
-                }
             }
         }
 
         stage('Deploy to Container') {
             steps {
-                // Use SSH Agent if available
                 script {
-                    try {
-                        sshagent(credentials: [env.SSH_CREDS]) {
-                            sh """
-                            ssh -o StrictHostKeyChecking=no root@${CONTAINER_IP} << EOF
-                            cd ${APP_DIR}
-                            git pull origin main
-                            python3 -m pip install -r requirements.txt
-                            systemctl restart flask-app
-                            systemctl restart nginx
-                            EOF
-                            """
-                        }
-                    } catch (Exception e) {
-                        echo "⚠️ Failed to use sshagent: ${e}"
-                        echo "👉 Trying passwordless SSH or manual key setup..."
+                    sshagent(credentials: [env.SSH_CREDS]) {
                         sh """
                         ssh -o StrictHostKeyChecking=no root@${CONTAINER_IP} << EOF
                         cd ${APP_DIR}
@@ -83,13 +51,12 @@ pipeline {
             }
         }
 
-
         stage('Health Check') {
             steps {
                 script {
                     def response = sh(script: "curl -s -o /dev/null -w '%{http_code}' http://${CONTAINER_IP}", returnStdout: true).trim()
                     if (response != '200') {
-                        error "App not healthy! Got HTTP $response"
+                        error "❌ App not healthy! Got HTTP $response"
                     } else {
                         echo "✅ App is healthy and returned HTTP $response"
                     }
