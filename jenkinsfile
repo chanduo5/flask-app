@@ -50,6 +50,40 @@ pipeline {
             }
         }
 
+        stage('Deploy to Container') {
+            steps {
+                // Use SSH Agent if available
+                script {
+                    try {
+                        sshagent(credentials: [env.SSH_CREDS]) {
+                            sh """
+                            ssh -o StrictHostKeyChecking=no root@${CONTAINER_IP} << EOF
+                            cd ${APP_DIR}
+                            git pull origin main
+                            python3 -m pip install -r requirements.txt
+                            systemctl restart flask-app
+                            systemctl restart nginx
+                            EOF
+                            """
+                        }
+                    } catch (Exception e) {
+                        echo "⚠️ Failed to use sshagent: ${e}"
+                        echo "👉 Trying passwordless SSH or manual key setup..."
+                        sh """
+                        ssh -o StrictHostKeyChecking=no root@${CONTAINER_IP} << EOF
+                        cd ${APP_DIR}
+                        git pull origin main
+                        python3 -m pip install -r requirements.txt
+                        systemctl restart flask-app
+                        systemctl restart nginx
+                        EOF
+                        """
+                    }
+                }
+            }
+        }
+
+
         stage('Health Check') {
             steps {
                 script {
