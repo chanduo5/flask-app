@@ -955,7 +955,6 @@ Your Flask app should be live!
 
 | Issue | Cause | Resolution |
 |-------|-------|------------|
-| Terraform `401 Unauthorized` | Incorrect Proxmox credentials | Updated with correct password and regenerated API token |
 | Jenkins service not starting | Port conflict or low memory | Switched to a better-resourced VMware VM |
 | Application deployment failed in Jenkins | Misconfigured Jenkinsfile and missing Docker dependencies | Not fully resolved due to time constraints |
 | Prometheus dashboard blank | Wrong port or missing node exporter | Installed `node_exporter` and configured target properly |
@@ -966,7 +965,7 @@ Your Flask app should be live!
 
 - Jenkins app deployment failed — needs Docker image setup and a complete `Jenkinsfile`
 - Application logic and integration were not tested
-- Plan to add **Grafana** dashboards and **Alertmanager** in the future
+
 
 ---
 -----------------------------------------------------------------------------------------
