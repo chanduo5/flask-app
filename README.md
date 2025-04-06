@@ -976,7 +976,7 @@ This DevOps Internship Challenge project served as a valuable hands-on experienc
 
 By manually linking a Docker container with a VM instead of using Terraform, this setup provided deeper insights into networking, container communication, and configuration. Key DevOps principles like automation, scalability, and observability were implemented using real-world tools such as Jenkins, Prometheus, and Nginx.
 
-The foundational components are fully functional and ready to be expanded with enhancements like Docker-based deployment, Jenkinsfile integration, Grafana dashboards, and production-ready app hosting. This journey also strengthened troubleshooting skills and provided an authentic simulation of deployment pipelines in constrained environments.
+The foundational components are fully functional and ready to be expanded with enhancements like Docker-based deployment, Jenkinsfile integration, and production-ready app hosting. This journey also strengthened troubleshooting skills and provided an authentic simulation of deployment pipelines in constrained environments.
 
 -----------------------------------------------------------------------------------------
 ---
